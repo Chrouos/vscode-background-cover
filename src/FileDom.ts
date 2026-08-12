@@ -14,6 +14,7 @@ import { getContext } from './global';
 import { getParticleEffectJs } from './ParticleEffect';
 import { getAllPets } from './PickList';
 import Color from './color';
+import { getDynamicModuleLoaderSource } from './dynamicLoader';
 
 interface AdditionalBundle {
     // Path relative to env.appRoot/out, e.g. 'vs/sessions/sessions.desktop.main.js'.
@@ -1060,10 +1061,9 @@ export class FileDom {
             }
 
             const dynamicUrl = resolveDynamicUrl();
-            // Workbench CSP enforces require-trusted-types-for 'script' with no
-            // 'default' policy, so assigning a string to script.src throws.
-            // Dynamic import() is not a Trusted Types sink and script-src 'self'
-            // permits loading the sibling file, so load the module instead.
+            // Workbench CSP enforces require-trusted-types-for 'script'. Fetch
+            // the runtime source and import it through a blob URL so we never
+            // pass the vscode-file URL through a script sink.
             let loadGeneration = 0;
             const maxLoadAttempts = 3;
             function loadDynamicJs() {
@@ -1075,7 +1075,7 @@ export class FileDom {
                         return;
                     }
                     try {
-                        import(withCacheBust(dynamicUrl)).catch((error) => {
+                        ${getDynamicModuleLoaderSource('withCacheBust(dynamicUrl)')}.catch((error) => {
                             console.error('[BackgroundCover] Dynamic load error:', error);
                             if (generation === loadGeneration && attempt < maxLoadAttempts) {
                                 setTimeout(() => attemptLoad(attempt + 1), (attempt + 1) * 1000);
