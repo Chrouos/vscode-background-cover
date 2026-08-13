@@ -12,6 +12,15 @@ export function getDynamicModuleLoaderSource(dynamicUrlExpression: string): stri
                             return response.text();
                         }).then((source) => {
                             const blobUrl = URL.createObjectURL(new Blob([source], { type: 'text/javascript' }));
-                            return import(blobUrl).finally(() => URL.revokeObjectURL(blobUrl));
+                            return import(blobUrl).then(
+                                (module) => {
+                                    URL.revokeObjectURL(blobUrl);
+                                    return module;
+                                },
+                                (error) => {
+                                    URL.revokeObjectURL(blobUrl);
+                                    throw error;
+                                }
+                            );
                         })`;
 }
