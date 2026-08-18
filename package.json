@@ -206,6 +206,7 @@
         "vscode:prepublish": "npm run build:webview && npm run compile",
         "vscode:uninstall": "node ./out/uninstall",
         "compile": "tsc -p ./",
+        "test:unit": "npm run compile && node ./out/test/dynamicLoader.test.js",
         "watch": "tsc -watch -p ./",
         "package": "vsce package",
         "build:webview": "cd webview && npm install --silent && npm run build",
